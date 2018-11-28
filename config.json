@@ -1,0 +1,35 @@
+{
+    "activation_bytes": "",
+    "audible_cdn": "cds.audible.com",
+    "user_agent": "Audible ADM 6.6.0.19;Windows Vista  Build 9200",
+    "aax_download_directory": "downloads\\aax",
+    "adh_directory": "downloads\\adh",
+    "adh_cache_file": "downloads\\cache\\adh",
+    "aax_cache_file": "downloads\\cache\\aax",
+    "driver_config": {
+        "language": "us",
+        "audible_username": "",
+        "base_url": "https://www.audible.com/",
+        "chromedriver_path": "bin\\chromedriver.exe",
+        "base_licensing_url": "https://www.audible.com/",
+        "amazon_login_url": "https://www.amazon.com/ap/signin?",
+        "library_url": "lib?ref=a_lib_c5_pageNum_1&purchaseDateFilter=all&programFilter=all&sortBy=PURCHASE_DATE.dsc&pageSize=50&page={0}",
+        "audible_login_url": "https://www.audible.com/sign-in/ref=ap_to_private?forcePrivateSignIn=true&rdPath=https%3A%2F%2Fwww.audible.com%2F%3F",
+        "activation_url": "{0}player-auth-token?playerType=software&playerId={1}=&bp_ua=y&playerModel=Desktop&playerManufacturer=Audible&serial=",
+        "registration_url": "{0}license/licenseForCustomerToken?customer_token={1}",
+        "deregistration_suffix": "&action=de-register",
+        "audible_login_elements": {
+            "username": "ap_email",
+            "password": "ap_password"
+        },
+        "activation_payload": {
+            "openid.ns": "http://specs.openid.net/auth/2.0",
+            "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
+            "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
+            "openid.mode": "logout",
+            "openid.assoc_handle": "amzn_audible_us",
+            "openid.return_to": "https://www.audible.com/player-auth-token?playerType=software&playerId=da39a3ee5e6b4b0d3255bfef95601890afd80709=&bp_ua=y&playerModel=Desktop&playerManufacturer=Audible&serial="
+        },
+        "browser_user_agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+    }
+}

@@ -14,6 +14,7 @@ class SynchronizedCacheFile(object):
     class __SynchronizedCacheFile(object):
 
         def __init__(self, file_path):
+            self._index = 0
             self._state = {}
             self._active = False
             self._no_write = False
@@ -33,6 +34,20 @@ class SynchronizedCacheFile(object):
 
         def __exit__(self, exc_type, exc_val, exc_tb):
             self.flush()
+
+        def __iter__(self):
+            self._index = 0
+            return self
+
+        def __next__(self):
+            keys = list(self._state.keys())
+            try:
+                item = keys[self._index]
+            except IndexError:
+                raise StopIteration()
+            self._index += 1
+            return item
+
 
         def _worker_thread(self):
             i = 0
@@ -98,13 +113,21 @@ class SynchronizedCacheFile(object):
                 new_instance = SynchronizedCacheFile.__SynchronizedCacheFile(arg[instance_type])
                 new_instance.start()
                 SynchronizedCacheFile.__instances[instance_type] = new_instance
-                atexit.register(SynchronizedCacheFile._cleanup)
+            atexit.register(SynchronizedCacheFile._cleanup)
         elif arg in SynchronizedCacheFile.__instances:
             return SynchronizedCacheFile.__instances[arg]
         elif not SynchronizedCacheFile.__instances:
             raise ValueError("Cache files currently uninitialized.")
         else:
             raise ValueError("Invalid cache file: {0}".format(arg))
+
+    @staticmethod
+    def initialize(config):
+        cache_files = {}
+        cache_file_keys = ["adh_cache_file", "aax_cache_file"]
+        for cache_file_key in cache_file_keys:
+            cache_files[cache_file_key] = config[cache_file_key]
+        SynchronizedCacheFile(cache_files)
 
 
 def test_function(cache, index):

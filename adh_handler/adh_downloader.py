@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 using_python3 = sys.version_info[0] == 3
 
 try:
+    from synchronized_cache_file import SynchronizedCacheFile
     from adh_handler.adh_parser import AdhParser
     from audible_driver.driver_config import AudibleDriverConfig
 except ImportError:
@@ -49,25 +50,20 @@ class AdhDownloader:
             outfile.write(response.content)
 
     def _process_adh_link(self, download_link, session):
-        adh_cache = self._load_adh_cache()
-        adh_identifier = AdhParser.get_adh_identifier(download_link)
-        if adh_identifier not in adh_cache:
-            filename = "{0}.adh".format(''.join(random.choices(string.ascii_letters + string.digits, k=32)))
-            dest_file = os.path.join(self._adh_download_folder, filename)
-            adh_cache[adh_identifier] = dest_file
-            self._download_adh_file(session, download_link, dest_file)
-            self._save_adh_cache(adh_cache)
+        with self._load_adh_cache() as adh_cache:
+            adh_identifier = AdhParser.get_adh_identifier(download_link)
+            if adh_identifier not in adh_cache:
+                filename = "{0}.adh".format(''.join(random.choices(string.ascii_letters + string.digits, k=32)))
+                dest_file = os.path.join(self._adh_download_folder, filename)
+                adh_cache[adh_identifier] = dest_file
+                self._download_adh_file(session, download_link, dest_file)
+                self._save_adh_cache(adh_cache)
 
     def _load_adh_cache(self):
-        adm_cache = {}
-        if os.path.isfile(self._adm_cache_file):
-            with open(self._adm_cache_file, "r") as infile:
-                adm_cache = json.loads(infile.read())
-        return adm_cache
+        return SynchronizedCacheFile(self._adm_cache_file)
 
     def _save_adh_cache(self, cache_data):
-        with open(self._adm_cache_file, "w") as outfile:
-            outfile.write(json.dumps(cache_data, sort_keys=True, indent=4))
+        cache_data.flush()
 
     def download_adh_files(self, audible_session_data):
         library_page = 1

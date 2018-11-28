@@ -10,6 +10,7 @@ import progressbar
 
 import audible_driver
 from audible_activator import AudibleActivator
+from synchronized_cache_file import SynchronizedCacheFile
 
 from adh_handler import AudibleDownloader
 from adh_handler.adh_parser import AdhParser
@@ -60,23 +61,13 @@ class AudibleLibraryDownloader:
             self._config["audible_cdn"], AdhParser(adh_file).parse_adm_file().to_http_params()))
 
     def _load_adh_download_cache(self):
-        adm_cache = {}
-        if os.path.isfile(self._config["adh_cache_file"]):
-            with open(self._config["adh_cache_file"], "r") as infile:
-                adm_cache = json.loads(infile.read())
-        return adm_cache
+        return SynchronizedCacheFile("adh_cache_file")
 
     def _load_aax_download_cache(self):
-        download_cache = {}
-        cache_file = self._config["aax_cache_file"]
-        if os.path.isfile(cache_file):
-            with open(cache_file, "r") as infile:
-                download_cache = json.loads(infile.read())
-        return download_cache
+        return SynchronizedCacheFile("aax_cache_file")
 
     def _save_aax_download_cache(self, cache_data):
-        with open(self._config["aax_cache_file"], "w") as outfile:
-            outfile.write(json.dumps(cache_data, indent=4))
+        cache_data.flush()
 
     def _get_adh_file_list(self):
         pending_downloads = []
@@ -94,13 +85,13 @@ class AudibleLibraryDownloader:
 
     def _finalize_download(self, adh_file, destination_file):
         if os.path.isfile(destination_file):
-            download_cache = self._load_aax_download_cache()
-            adh_identifier = self._get_adh_file_identifier(adh_file)
-            download_cache[adh_identifier] = {
-                "filepath": destination_file,
-                "download_finished": True
-            }
-            self._save_aax_download_cache(download_cache)
+            with self._load_aax_download_cache() as download_cache:
+                adh_identifier = self._get_adh_file_identifier(adh_file)
+                download_cache[adh_identifier] = {
+                    "filepath": destination_file,
+                    "download_finished": True
+                }
+                self._save_aax_download_cache(download_cache)
             return True
         return False
 
@@ -127,11 +118,12 @@ class AudibleLibraryDownloader:
                 print("[*] Download failed, will retry on next run.")
 
 
-
 if __name__ == "__main__":
     print("[*] Loading configuration file . . .")
     with open("config.json", "r") as infile:
         config = json.loads(infile.read())
+    print("[*] Initializing download and conversion caches . . .")
+    SynchronizedCacheFile.initialize(config)
     print("[*] Preparing Audible Driver configuration . . .")
     driver_config = audible_driver.driver_config.AudibleDriverConfig(config["driver_config"])
     username = input("Audible username > ")
@@ -149,7 +141,7 @@ if __name__ == "__main__":
         with open("config.json", "w") as outfile:
             outfile.write(json.dumps(config, indent=4))
             print("[*] Config file updated with activation byte values.")
-    adm_downloader = AdhDownloader(driver_config, config["adh_cache_file"], config["adh_directory"])
+    adm_downloader = AdhDownloader(driver_config, "adh_cache_file", config["adh_directory"])
     adm_downloader.download_adh_files(activation_session_data)
     downloader = AudibleLibraryDownloader(config)
     downloader.download_all_files()

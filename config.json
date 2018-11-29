@@ -6,6 +6,8 @@
     "adh_directory": "downloads\\adh",
     "adh_cache_file": "downloads\\cache\\adh",
     "aax_cache_file": "downloads\\cache\\aax",
+    "remove_after_conversion": false,
+    "tsv_path": "library_contents.tsv",
     "driver_config": {
         "language": "us",
         "audible_username": "",
@@ -31,5 +33,11 @@
             "openid.return_to": "https://www.audible.com/player-auth-token?playerType=software&playerId=da39a3ee5e6b4b0d3255bfef95601890afd80709=&bp_ua=y&playerModel=Desktop&playerManufacturer=Audible&serial="
         },
         "browser_user_agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+    },
+    "converter_config": {
+        "max_threads": 4,
+        "library_directory": "library",
+        "ffmpeg_path": "bin\\ffmpeg.exe",
+        "ffprobe_path": "bin\\ffprobe.exe"
     }
 }

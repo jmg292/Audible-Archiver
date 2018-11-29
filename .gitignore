@@ -74,8 +74,14 @@ downloads/aax/*
 # Audible Download Helper files
 downloads/adh/*.adh
 
+# Converted MP3 files
+library/*.mp3
+
 # Cache files
 downloads/cache/*
 
 # Compiled Python files
 *.pyc
+
+# Batch files, cuz apparently I'm dynamically generating those now
+*.bat

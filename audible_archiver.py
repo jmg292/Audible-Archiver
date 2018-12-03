@@ -118,7 +118,7 @@ class AudibleLibraryDownloader:
         prospective_filepath = os.path.join(
             self._config["converter_config"]["library_directory"],
             DownloadProgressBar.clean_title(metadata.title)
-        )
+        ) + ".mp3"
         if os.path.isfile(prospective_filepath):
             with self._load_aax_download_cache() as download_data:
                 for key in download_data:

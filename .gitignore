@@ -85,3 +85,4 @@ downloads/cache/*
 
 # Batch files, cuz apparently I'm dynamically generating those now
 *.bat
+*.tsv

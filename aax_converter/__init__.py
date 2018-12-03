@@ -90,7 +90,7 @@ class AaxConverter:
                 "-metadata", r'date="{0}"'.format(aax_metadata.date),
                 "-metadata", r'genre="Audiobook"',
                 "-metadata", r'copyright="{0}"'.format(aax_metadata.copyright),
-                output_file, "& pause & exit"
+                output_file, "& exit"
             ])
             tmp_batch = ''.join(random.choices(string.ascii_letters, k=16)) + ".bat"
             with open(tmp_batch, "w") as outfile:
@@ -98,6 +98,7 @@ class AaxConverter:
             self._requiring_cleanup.append(tmp_batch)
             os.system("start /wait cmd /k {0}".format(tmp_batch))
             if self.conversion_finished_event is not None:
+                print("[*] Conversion of {0} finished, finalizing . . .".format(aax_metadata.title))
                 self.conversion_finished_event(aax_metadata)
 
         def _watcher(self):

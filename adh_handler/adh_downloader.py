@@ -34,12 +34,25 @@ class AdhDownloader:
         return session
 
     @staticmethod
+    def _get_max_library_page(audible_library_html):
+        available_pages = []
+        soup = BeautifulSoup(audible_library_html, "html.parser")
+        page_links = soup.find_all("a", {"class": "pageNumberElement", "data-name": "page"})
+        for page_link in page_links:
+            try:
+                page_number = int(page_link['data-value'])
+                available_pages.append(page_number)
+            except ValueError:
+                pass
+        return max(available_pages)
+
+    @staticmethod
     def _get_adh_download_urls(audible_library_html):
         download_urls = []
         soup = BeautifulSoup(audible_library_html, "html.parser")
-        library_content = soup.findAll("tr", id=lambda x: x and x.startswith("adbl-library-content-row"))
+        library_content = soup.findAll("div", id=lambda x: x and x.startswith("library-download-popover"))
         for content_row in library_content:
-            content_adh_link = content_row.findAll("a", class_="bc-button-text", href=True)
+            content_adh_link = content_row.find_all("a", {"class": "bc-link", "aria-label": "DownloadFull"}, href=True)
             if content_adh_link:
                 download_urls.append(content_adh_link[0]['href'])
         return download_urls
@@ -69,7 +82,13 @@ class AdhDownloader:
         library_page = 1
         adm_download_links = []
         session = self._get_prepared_session(audible_session_data)
-        while True:
+        max_page = self._get_max_library_page(
+            str(session.get(
+                self._config.library_url.format("1"),
+                headers={"User-Agent": self._config.browser_user_agent}
+            ).content, 'utf-8')
+        )
+        for library_page in range(1, max_page + 1):
             print("[*] Processing library page {0} . . .".format(library_page))
             response = session.get(self._config.library_url.format(library_page),
                                    headers={"User-Agent": self._config.browser_user_agent})
@@ -77,7 +96,6 @@ class AdhDownloader:
             if not download_links:
                 break
             adm_download_links.extend(download_links)
-            library_page += 1
         print("[*] Found {0} audiobooks in your library.".format(len(adm_download_links)))
         print("[*] Processing required helper files . . .")
         i = 0
